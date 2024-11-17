@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - /Users/Ethan/AppData/loki:/Users/Ethan/AppData/loki  # Mount the whole directory
+    command: -config.file=/Users/Ethan/AppData/loki/loki-config.yml  # Explicit config file path
+
+  prometheus:
+    image: prom/prometheus:v2.46.0
+    ports:
+      - 9090:9090
+    volumes:
+      - /Users/ethan/AppData/prometheus:/Users/ethan/AppData/prometheus  # Mount the whole directory
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - /Users/ethan/AppData/grafana:/Users/ethan/AppData/grafana
