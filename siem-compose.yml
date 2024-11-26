@@ -1,23 +1,69 @@
-version: '3.7'
+version: "3"
+
+networks:
+  loki:
+
 services:
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:2.9.2
     ports:
       - "3100:3100"
-    volumes:
-      - /Users/Ethan/AppData/loki:/Users/Ethan/AppData/loki  # Mount the whole directory
-    command: -config.file=/Users/Ethan/AppData/loki/loki-config.yml  # Explicit config file path
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - loki
 
-  prometheus:
-    image: prom/prometheus:v2.46.0
-    ports:
-      - 9090:9090
+  promtail:
+    image: grafana/promtail:2.9.2
     volumes:
-      - /Users/ethan/AppData/prometheus:/Users/ethan/AppData/prometheus  # Mount the whole directory
+      - /var/log:/var/log
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - loki
 
   grafana:
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy 
+          orgId: 1
+          url: http://loki:3100
+          basicAuth: false
+          isDefault: true
+          version: 1
+          editable: false
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          orgId: 1
+          url: http://prometheus:9090
+          basicAuth: false
+          isDefault: false
+          version: 1
+          editable: true
+        EOF
+        /run.sh
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+    networks:
+      - loki
+
+  prometheus:
+    image: prom/prometheus:latest
     volumes:
-      - /Users/ethan/AppData/grafana:/Users/ethan/AppData/grafana
+      - ./AppData/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - loki
