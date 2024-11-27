@@ -1,51 +1,34 @@
 # Open-Source SIEM Deployment
 
-This project allows for the quick deployment of a full-service log aggregration, SIEM, and SOAR stack using only free, open-source software. It utilizes Ansible to configure the hosts and Docker Compose to deploy the services.
+This project allows for the quick deployment of a full-service log aggregation, SIEM, and SOAR stack using only free, open-source software. It utilizes Ansible to configure the hosts and Docker Compose to deploy the services.
 
 ## Log Pipeline
 
-In order to quickly ingest logs, I'm using a 3-tiered log ingestion and aggregation pipeline.
+In order to quickly ingest logs, I'm using two log ingestion and aggregation pipelines: General and Security.
 
-* **rsyslog:** Handles log collection, forwarding, and preprocessing at the system level. It acts as the foundation, efficiently gathering logs from multiple sources and forwarding them to Loki and Wazuh.
+![alt text](https://github.com/echumley/FOSS-SIEM-Stack/blob/99313b9ac5624133c00f900c6e75f3850bf9ce1c/Security-Stack.drawio.png)
+
+### General Log Pipeline
+
+* **Prometheus Node Exporter:** Collects hardware and OS metrics from Linux machines, providing detailed system-level insights for monitoring.
+* **Promtail:** Gathers and ships logs from various sources to Loki, facilitating structured log collection and forwarding.
 * **Loki:** Provides a scalable, cost-efficient log storage and querying system, ideal for monitoring, troubleshooting, and correlating logs with metrics.
-* **Wazuh:** Focuses on security-related logs and threat detection, enhancing the system’s security posture.
+* **Grafana:** A powerful open-source platform for visualizing and analyzing metrics and logs, enabling the creation of rich, interactive dashboards.
 
-```
-+-------------------+
-|      Rsyslog      | <---- Collects logs from various sources
-+-------------------+
-        |
-        v
-+-------------------+      +-------------------+
-|      Loki         | ---> |     Grafana       |
-|  (Log Aggregator) |      |  (Visualization)  |
-+-------------------+      +-------------------+
-        |
-        v
-+-------------------+      +-------------------+      +---------------------+
-|      Wazuh        | ---> |     Shuffle       | ---> |    Prometheus       |
-| (Security Events) |      |   (Automation)    |      |  (Metrics & Health) |
-+-------------------+      +-------------------+      +---------------------+
-        |
-        v
-+-------------------+
-|       Zeek        | ---> (Traffic Logs to Loki or Wazuh)
-| (Network Traffic) |
-+-------------------+
-        |
-        v
-+-------------------+      +-------------------+
-|   CrowdSec        | ---> |     Fail2Ban      | ---> (Threat Intelligence, IP Blocking)
-| (Threat Analysis) |      |    (Brute-Force   |
-+-------------------+      |     Protection)   |
-                           +-------------------+
-```
+### Security Log Pipeline
+
+* **Crowdsec:** A collaborative, open-source intrusion prevention system that analyzes logs for malicious activity and shares threat intelligence to improve security.
+* **Fail2Ban:** Monitors log files for suspicious activity, such as failed login attempts, and automatically bans IP addresses to prevent brute-force attacks.
+* **Wazuh Agent:** The Wazuh agent installs on the host and forwards security logs and health information to the Wazuh Manager
+* **Zeek:** A network security monitor that analyzes traffic in real time, producing detailed logs for detecting network anomalies and intrusions.
+* **Wazuh Manager:** Focuses on security-related logs and threat detection, enhancing the system’s security posture.
+* **TheHive:** An open-source Security Incident Response Platform (SIRP) that helps organize and manage security incidents, facilitating collaboration and case management among analysts.
 
 ### Log Workflow
 
 **1. Log Collection and Forwarding:**
 
-* Use rsyslog to collect logs from Linux/Windows servers, routers, firewalls, and applications.
+* Use Promtail, Prometheus Node Exporter, and the Wazuh agent to collect logs from Linux/Windows servers, routers, firewalls, and applications.
 * Filter logs based on type (e.g., application logs go to Loki; security-related logs go to Wazuh).
 * Forward logs in parallel to both Loki and Wazuh.
 
