@@ -71,6 +71,12 @@
         dest: /usr/local/bin/docker-compose
         mode: 'u+x,g+x'
 
+# Install and configure Fail2Ban
+# Install and configure Crowdsec
+# Install and configure the Wazuh Agent
+# Install and configure Promtail
+# Install and configure the Prometheus Node Exporter
+
 # ----- For future use -----
 #    - name: Pull default Docker image
 #      community.docker.docker_image:

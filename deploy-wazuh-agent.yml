@@ -1,0 +1,15 @@
+- hosts: all:!wazuh-manager
+  roles:
+   - ansible-wazuh-agent
+
+  tasks:
+    wazuh_managers:
+      - address: <WAZUH_MANAGER_IP_ADDRESS>
+        port: 1514
+        protocol: udp
+    wazuh_agent_authd:
+      registration_address: <WAZUH_MANAGER_IP_ADDRESS>
+      enable: true
+      port: 1515
+      ssl_agent_ca: null
+      ssl_auto_negotiate: 'no'

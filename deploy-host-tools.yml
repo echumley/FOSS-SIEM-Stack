@@ -1,0 +1,69 @@
+---
+- name: Deploy and Configure Fail2Ban, CrowdSec, and Wazuh Agent
+  hosts: all
+  become: yes  # Ensure elevated privileges
+
+  vars:
+    wazuh_agent_url: "https://packages.wazuh.com/4.9/wazuh-install.sh"
+    wazuh_server_ip: "10.0.10.10"  # Replace with your Wazuh manager's IP
+
+  tasks:
+    ## ----- Installs Updates ----- ##
+    - name: Install updates on Ubuntu
+      package:
+        upgrade: dist
+        update_cache: true
+      tags: always
+
+    ## ----- Install Required Packages ----- ##
+    - name: Install prerequisites
+      package:
+        name:
+          - curl
+          - wget
+          - fail2ban
+        state: present
+        update_cache: true
+
+    ## ----- Install and Configure Fail2Ban ----- ##
+    - name: Enable Fail2Ban service
+      systemd:
+        name: fail2ban
+        enabled: true
+        state: started
+
+    - name: Copy Fail2Ban configuration
+      copy:
+        src: ./AppData/fail2ban/jail.local
+        dest: /etc/fail2ban/jail.local
+      notify: restart fail2ban
+
+    ## ----- Install and Configure CrowdSec ----- ##
+    - name: Install CrowdSec
+      shell: |
+        curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | bash
+        apt-get install -y crowdsec
+      args:
+        creates: /etc/crowdsec
+
+    - name: Install CrowdSec bouncer for Fail2Ban
+      shell: |
+        cscli bouncers add fail2ban-bouncer
+      notify: restart crowdsec
+
+    - name: Configure CrowdSec with Fail2Ban
+      copy:
+        src: ./AppData/crowdsec/fail2ban_bouncer.yaml  # Custom integration config
+        dest: /etc/crowdsec/bouncers/fail2ban.yaml
+      notify: restart crowdsec
+
+  handlers:
+    - name: restart fail2ban
+      systemd:
+        name: fail2ban
+        state: restarted
+
+    - name: restart crowdsec
+      systemd:
+        name: crowdsec
+        state: restarted

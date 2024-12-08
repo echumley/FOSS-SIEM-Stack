@@ -2,3 +2,5 @@
 inventory.ini
 vm-setup-alt.yml
 AppData
+.gitignore
+ansible.log
