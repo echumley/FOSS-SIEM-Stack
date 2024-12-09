@@ -4,11 +4,11 @@
 
   tasks:
     wazuh_managers:
-      - address: <WAZUH_MANAGER_IP_ADDRESS>
+      - address: wazuh.chumbucket.dev
         port: 1514
         protocol: udp
     wazuh_agent_authd:
-      registration_address: <WAZUH_MANAGER_IP_ADDRESS>
+      registration_address: wazuh.chumbucket.dev
       enable: true
       port: 1515
       ssl_agent_ca: null

@@ -2,6 +2,17 @@
 
 This project allows for the quick deployment of a full-service log aggregation, SIEM, and SOAR stack using only free, open-source software. It utilizes Ansible to configure the hosts and Docker Compose to deploy the services.
 
+## To-Do
+
+- [x] Create Docker Compose file for logging stack
+- [ ] Create playbook for logging stack
+- [x] Create playbook for Wazuh manager deployment
+- [ ] Create playbook for logging agent installation
+- [ ] Create playbook for Wazuh agent installation
+- [ ] Create playbook for Zeek deployment
+- [ ] Create playbook for TheHuve installation
+- [ ] Create automatic integration script to connect all the necessary services
+
 ## Log Pipeline
 
 In order to quickly ingest logs, I'm using two log ingestion and aggregation pipelines: General and Security.
@@ -77,13 +88,9 @@ Security analysts use TheHive to manage and investigate the cases created from W
     ```
     ansible all -i inventory.ini -m ping
     ```
-4. Prepare the VM using the `vm-setup.yml` Ansible playbook
+4. Deploy the SIEM logging stack using the `loggin-stack-compose.yml`
     ```
-    ansible-playbook vm-setup.yml -i inventory.ini --ask-become
-    ```
-5. Deploy the SIEM logging stack using the `siem-compose.yml`
-    ```
-    docker compose siem-compose.yml up -d
+    docker compose loggin-stack-compose.yml up -d
     ```
 
 ADD THE STEPS TO VERIFY THE STACK IS WORKING AS INTENDED

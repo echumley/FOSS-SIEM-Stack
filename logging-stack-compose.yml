@@ -3,22 +3,39 @@ version: "3"
 networks:
   loki:
 
+volumes:
+  prometheus_data:
+    driver: local
+  loki_data:
+    driver: local
+  grafana_data:
+    driver: local
+  promtail_data:
+    driver: local
+
 services:
   loki:
     image: grafana/loki:2.9.2
     ports:
       - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - loki_data:/etc/loki
+      - /etc/AppData/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
     networks:
       - loki
+    restart: unless-stopped
 
   promtail:
     image: grafana/promtail:2.9.2
-    volumes:
-      - /var/log:/var/log
     command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - promtail_data:/data
+      - /var/log:/var/log
+      - /etc/AppData/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
     networks:
       - loki
+    restart: unless-stopped
 
   grafana:
     environment:
@@ -35,7 +52,7 @@ services:
         datasources:
         - name: Loki
           type: loki
-          access: proxy 
+          access: proxy
           orgId: 1
           url: http://loki:3100
           basicAuth: false
@@ -56,14 +73,19 @@ services:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
     networks:
       - loki
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
     volumes:
-      - ./AppData/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+      - /etc/AppData/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     networks:
       - loki
+    restart: unless-stopped
