@@ -3,10 +3,6 @@
   hosts: all
   become: yes  # Ensure elevated privileges
 
-  vars:
-    wazuh_agent_url: "https://packages.wazuh.com/4.9/wazuh-install.sh"
-    wazuh_server_ip: "10.0.10.10"  # Replace with your Wazuh manager's IP
-
   tasks:
     ## ----- Installs Updates ----- ##
     - name: Install updates on Ubuntu

@@ -88,11 +88,11 @@ Security analysts use TheHive to manage and investigate the cases created from W
     ```
     ansible all -i inventory.ini -m ping
     ```
-4. Deploy the SIEM logging stack using the `loggin-stack-compose.yml`
+4. Deploy the SIEM logging stack using the `loggin-stack-setup.yml`
     ```
-    docker compose loggin-stack-compose.yml up -d
+    ansible-playbook logging-stack-setup.yml -i inventory.ini --ask-become
     ```
-
+5. 
 ADD THE STEPS TO VERIFY THE STACK IS WORKING AS INTENDED
 
 ### Step 2: Deploy the Wazuh Server
@@ -106,6 +106,7 @@ ADD THE STEPS TO VERIFY THE STACK IS WORKING AS INTENDED
 4. Look at the console output for the admin login information
 5. Verify you can access the Wazuh manager by going to `https://<ip-address>`
 6. Login using admin login information
+7. To configure the Wazuh server further, modify the `/var/ossec/etc/ossec.conf`
 
 ### Step 3: Deploy the Security Tools on a Host
 

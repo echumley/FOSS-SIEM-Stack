@@ -28,6 +28,12 @@
         port: 443
         proto: tcp
 
+    - name: Allow syslog (port 514)
+      ansible.builtin.ufw:
+        rule: allow
+        port: 514
+        proto: udp
+
     - name: Ensure UFW is enabled and running
       ansible.builtin.systemd:
         name: ufw
