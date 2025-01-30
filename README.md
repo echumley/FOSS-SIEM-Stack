@@ -5,13 +5,14 @@ This project allows for the quick deployment of a full-service log aggregation, 
 ## To-Do
 
 - [x] Create Docker Compose file for logging stack
-- [ ] Create playbook for logging stack
+- [x] Create playbook for logging stack
 - [x] Create playbook for Wazuh manager deployment
-- [ ] Create playbook for logging agent installation
-- [ ] Create playbook for Wazuh agent installation
+- [ ] Create playbook for logging & security agent installation (Fail2Ban, Crowdsec, Wazuh agent, Prometheus Node Exporter & Promtail Agent)
 - [ ] Create playbook for Zeek deployment
-- [ ] Create playbook for TheHuve installation
+- [ ] Create playbook for TheHive installation
+- [ ] Create agent deployment playbooks for various OSs
 - [ ] Create automatic integration script to connect all the necessary services
+- [ ] Ensure Docker compatibility with internal logging & container security
 
 ## Log Pipeline
 
