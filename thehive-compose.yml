@@ -1,0 +1,52 @@
+---
+- name: Install TheHive
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Update Ubuntu
+      package:
+        upgrade: dist
+        update_cache: true
+      tags: always
+
+    # Firewall configuration
+    - name: Ensure UFW is installed
+      ansible.builtin.package:
+        name: ufw
+        state: present
+
+    - name: Allow HTTP (port 80)
+      ansible.builtin.ufw:
+        rule: allow
+        port: 80
+        proto: tcp
+
+    - name: Allow HTTPS (port 443)
+      ansible.builtin.ufw:
+        rule: allow
+        port: 443
+        proto: tcp
+
+    - name: Allow syslog (port 514)
+      ansible.builtin.ufw:
+        rule: allow
+        port: 514
+        proto: udp
+
+    - name: Ensure UFW is enabled and running
+      ansible.builtin.systemd:
+        name: ufw
+        enabled: yes
+        state: started
+
+    - name: Verify UFW status
+      ansible.builtin.command: ufw status verbose
+      register: ufw_status
+
+    - name: Debug UFW status
+      ansible.builtin.debug:
+        var: ufw_status.stdout_lines
+
+# Insert TheHive compose here
+  

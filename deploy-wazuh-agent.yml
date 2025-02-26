@@ -1,15 +1,44 @@
-- hosts: all:!wazuh-manager
-  roles:
-   - ansible-wazuh-agent
-
+---
+- name: Deploy Wazuh Agent
+  hosts: wazuh_agents
+  become: yes
   tasks:
-    wazuh_managers:
-      - address: wazuh.chumbucket.dev
-        port: 1514
-        protocol: udp
-    wazuh_agent_authd:
-      registration_address: wazuh.chumbucket.dev
-      enable: true
-      port: 1515
-      ssl_agent_ca: null
-      ssl_auto_negotiate: 'no'
+
+    - name: Add Wazuh repository key
+      ansible.builtin.apt_key:
+        url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+        state: present
+
+    - name: Add Wazuh repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://packages.wazuh.com/4.x/apt/ stable main"
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Add Wazuh repository (RHEL-based)
+      ansible.builtin.yum_repository:
+        name: wazuh
+        description: Wazuh repository
+        baseurl: https://packages.wazuh.com/4.x/yum/
+        gpgkey: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+        gpgcheck: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Wazuh agent
+      ansible.builtin.package:
+        name: wazuh-agent
+        state: present
+
+    - name: Configure Wazuh agent
+      ansible.builtin.template:
+        src: ./AppData/wazuh/wazuh-agent.conf
+        dest: /var/ossec/etc/ossec.conf
+        owner: root
+        group: ossec
+        mode: '0644'
+
+    - name: Enable and start Wazuh agent
+      ansible.builtin.service:
+        name: wazuh-agent
+        enabled: yes
+        state: started

@@ -38,7 +38,7 @@ In order to quickly ingest logs, I'm using two log ingestion and aggregation pip
 
 ## SIEM & SOAR
 
-The SIEM and SOAR of choice for this project are Wazuh and TheHive due to their opn-source model, continued support from developers and the community, rich feature-sets, and interoperability with other security-related services. Wazuh aggregates and correlates security logs from Fail2Ban, Crowdsec, and the Wazuh agent installed on the hosts. After logs are aggregated and correlated, Wazuh will alert an analyst a threat or attack is detected. Wazuh has some built-in features for automatically remediating basic security issues, but TheHive will do more in-depth remediation when a complex interference is required.
+The SIEM and SOAR of choice for this project are Wazuh and TheHive due to their open-source model, continued support from developers and the community, rich feature-sets, and interoperability with other security-related services. Wazuh aggregates and correlates security logs from Fail2Ban, Crowdsec, and the Wazuh agent installed on the hosts. After logs are aggregated and correlated, Wazuh will alert an analyst a threat or attack is detected. Wazuh has some built-in features for automatically remediating basic security issues, but TheHive will do more in-depth remediation when a complex interference is required.
 
 Wazuh and TheHive work together to create a comprehensive security operations workflow, combining threat detection, analysis, and incident response. Here’s how they integrate and complement each other:
 
@@ -109,18 +109,57 @@ ADD THE STEPS TO VERIFY THE STACK IS WORKING AS INTENDED
 6. Login using admin login information
 7. To configure the Wazuh server further, modify the `/var/ossec/etc/ossec.conf`
 
-### Step 3: Deploy the Security Tools on a Host
+### Step 3: Deploy the Security Tools on a Host - NOT COMPLETED
 
 1. Deploy another VM (or use one you already have running, but I recommend deploying it on a test VM first)
 2. Change the Wazuh server IPv4 address in `vm-setup.yml`
-2. Deploy the `deploy-agent-tools.yml`
+2. Deploy the `deploy-host-tools.yml`
     ```
     ansible-playbook deploy-agent-tools.yml -i inventory.ini --ask-become
     ```
 
 ADD THE STEPS TO VERIFY THE AGENTS ARE WORKING AND FORWARDING AS INTENDED
 
+### Step 4: Deploy Zeek - NOT COMPLETED
+
+1. Deploy another VM (or use on the same VM, but might require some change in the Ansible Playbook)
+2. Deploy `zeek-setup.yml`
+    ```
+    ansible-playbook zeek-setup.yml -i inventory.ini --ask-become
+    ```
+3. Verify zeek-compose.yml has correctly deployed
+    ```
+    sudo docker ps -a
+    ```
+4. Log into Zeek's webUI and configure
+
+### Step 5: Deploy TheHive - NOT COMPLETED
+
+1. Deploy another VM (or use on the same VM, but might require some change in the Ansible Playbook)
+2. Deploy `thehive-setup.yml`
+    ```
+    ansible-playbook thehive-setup.yml -i inventory.ini --ask-become
+    ```
+3. Verify thehive-compose.yml has correctly deployed
+    ```
+    sudo docker ps -a
+    ```
+4. Log into TheHive's webUI at `https://ip/thehive`
+5. Use TheHive's official [First Start Guide](https://docs.strangebee.com/thehive/administration/first-start/) to input a free community license and add an organization.
+
+### Step 6: Deploy Cortex - NOT COMPLETED
+
+1. Deploy another VM (or use on the same VM, but might require some change in the Ansible Playbook)
+2. Deploy `cortex-setup.yml`
+    ```
+    ansible-playbook cortex-setup.yml -i inventory.ini --ask-become
+    ```
+3. Verify cortex-compose.yml has correctly deployed
+    ```
+    sudo docker ps -a
+    ```
+4. Log into Cortex's webUI and configure
+
 ## Useful Guides
 
 https://documentation.wazuh.com/current/deployment-options/deploying-with-ansible/guide/install-ansible.html
-
