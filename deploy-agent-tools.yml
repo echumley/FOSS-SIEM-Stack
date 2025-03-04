@@ -1,0 +1,105 @@
+---
+- name: Deploy and Configure Fail2Ban, CrowdSec, and Wazuh Agent
+  hosts: all
+  become: yes  # Ensure elevated privileges
+
+  tasks:
+    ## ----- Installs Updates ----- ##
+    - name: Install updates on Ubuntu
+      package:
+        upgrade: dist
+        update_cache: true
+      tags: always
+
+    ## ----- Install Required Packages ----- ##
+    - name: Install prerequisites
+      package:
+        name:
+          - curl
+          - wget
+          - fail2ban
+        state: present
+        update_cache: true
+
+    ## ----- Install and Configure Fail2Ban ----- ##
+    - name: Enable Fail2Ban service
+      systemd:
+        name: fail2ban
+        enabled: true
+        state: started
+
+    - name: Copy Fail2Ban configuration
+      copy:
+        src: ./AppData/fail2ban/jail.local
+        dest: /etc/fail2ban/jail.local
+      notify: restart fail2ban
+
+    ## ----- Install and Configure CrowdSec ----- ##
+    - name: Install CrowdSec
+      shell: |
+        curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | bash
+        apt-get install -y crowdsec
+      args:
+        creates: /etc/crowdsec
+
+    - name: Install CrowdSec bouncer for Fail2Ban
+      shell: |
+        cscli bouncers add fail2ban-bouncer
+      notify: restart crowdsec
+
+    - name: Configure CrowdSec with Fail2Ban
+      copy:
+        src: ./AppData/crowdsec/fail2ban_bouncer.yaml  # Custom integration config
+        dest: /etc/crowdsec/bouncers/fail2ban.yaml
+      notify: restart crowdsec
+
+  handlers:
+    - name: restart fail2ban
+      systemd:
+        name: fail2ban
+        state: restarted
+
+    - name: restart crowdsec
+      systemd:
+        name: crowdsec
+        state: restarted
+
+    ## ----- Install and Configure Wazuh ----- ##
+    - name: Add Wazuh repository key
+      ansible.builtin.apt_key:
+        url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+        state: present
+
+    - name: Add Wazuh repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://packages.wazuh.com/4.x/apt/ stable main"
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Add Wazuh repository (RHEL-based)
+      ansible.builtin.yum_repository:
+        name: wazuh
+        description: Wazuh repository
+        baseurl: https://packages.wazuh.com/4.x/yum/
+        gpgkey: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+        gpgcheck: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Wazuh agent
+      ansible.builtin.package:
+        name: wazuh-agent
+        state: present
+
+    - name: Configure Wazuh agent
+      ansible.builtin.template:
+        src: ./AppData/wazuh/wazuh-agent.conf
+        dest: /var/ossec/etc/ossec.conf
+        owner: root
+        group: ossec
+        mode: '0644'
+
+    - name: Enable and start Wazuh agent
+      ansible.builtin.service:
+        name: wazuh-agent
+        enabled: yes
+        state: started
