@@ -7,10 +7,9 @@ This project allows for the quick deployment of a full-service log aggregation, 
 - [x] Create Docker Compose file for logging stack
 - [x] Create playbook for logging stack
 - [x] Create playbook for Wazuh manager deployment
-- [ ] Create playbook for logging & security agent installation (Fail2Ban, Crowdsec, Wazuh agent, Prometheus Node Exporter & Promtail Agent)
+- [ ] Create playbook for logging & security agent installation (Fail2Ban, Crowdsec, Wazuh agent, Prometheus Node Exporter & Promtail Agent) for various OSs
 - [ ] Create playbook for Zeek deployment
-- [ ] Create playbook for TheHive installation
-- [ ] Create agent deployment playbooks for various OSs
+- [ ] Create playbook for TheHive & Cortex installation
 - [ ] Create automatic integration script to connect all the necessary services
 - [ ] Ensure Docker compatibility with internal logging & container security
 
@@ -35,12 +34,13 @@ In order to quickly ingest logs, I'm using two log ingestion and aggregation pip
 * **Zeek:** A network security monitor that analyzes traffic in real time, producing detailed logs for detecting network anomalies and intrusions.
 * **Wazuh Manager:** Focuses on security-related logs and threat detection, enhancing the system’s security posture.
 * **TheHive:** An open-source Security Incident Response Platform (SIRP) that helps organize and manage security incidents, facilitating collaboration and case management among analysts.
+* **Cortex:** Analysis and enrichment engine that automates the querying of threat intelligence sources and forensic tools to provide contextual data for security incidents.
 
 ## SIEM & SOAR
 
 The SIEM and SOAR of choice for this project are Wazuh and TheHive due to their open-source model, continued support from developers and the community, rich feature-sets, and interoperability with other security-related services. Wazuh aggregates and correlates security logs from Fail2Ban, Crowdsec, and the Wazuh agent installed on the hosts. After logs are aggregated and correlated, Wazuh will alert an analyst a threat or attack is detected. Wazuh has some built-in features for automatically remediating basic security issues, but TheHive will do more in-depth remediation when a complex interference is required.
 
-Wazuh and TheHive work together to create a comprehensive security operations workflow, combining threat detection, analysis, and incident response. Here’s how they integrate and complement each other:
+Wazuh, TheHive, and Cortex work together to create a comprehensive security operations workflow, combining threat detection, analysis, and incident response. Here’s how they integrate and complement each other:
 
 ### Security Stack Workflow
 
@@ -81,7 +81,7 @@ Security analysts use TheHive to manage and investigate the cases created from W
 
 ## How to Use
 
-### Step 1: The Logging Stack
+### Step 1: The Logging Stack - COMPLETED, BUT NEEDS TUNING AND VALIDATION
 
 1. Install Ansible & dependencies ([text](https://documentation.wazuh.com/current/deployment-options/deploying-with-ansible/guide/install-ansible.html))
 2. Deploy a Debian or Ubuntu VM
@@ -113,11 +113,11 @@ ADD THE STEPS TO VERIFY THE STACK IS WORKING AS INTENDED
 
 1. Deploy another VM (or use one you already have running, but I recommend deploying it on a test VM first)
 2. Change the Wazuh server IPv4 address in `vm-setup.yml`
-2. Deploy the `deploy-host-tools.yml`
+3. Deploy the `deploy-host-tools.yml`
     ```
     ansible-playbook deploy-agent-tools.yml -i inventory.ini --ask-become
     ```
-
+4. 
 ADD THE STEPS TO VERIFY THE AGENTS ARE WORKING AND FORWARDING AS INTENDED
 
 ### Step 4: Deploy Zeek - NOT COMPLETED
@@ -162,4 +162,5 @@ ADD THE STEPS TO VERIFY THE AGENTS ARE WORKING AND FORWARDING AS INTENDED
 
 ## Useful Guides
 
-https://documentation.wazuh.com/current/deployment-options/deploying-with-ansible/guide/install-ansible.html
+https://documentation.wazuh.com/current/deployment-options/deploying-with-ansible/guide/install-ansible.html \
+https://docs.strangebee.com/thehive/administration/first-start/
